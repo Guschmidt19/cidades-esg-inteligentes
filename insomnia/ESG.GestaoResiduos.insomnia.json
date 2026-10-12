@@ -1,0 +1,215 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-06-16T01:11:10.000Z",
+  "__export_source": "insomnia.desktop.app:v8.6.1",
+  "resources": [
+    {
+      "_id": "wrk_esg_gestao_residuos",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "ESG - Gestão de Resíduos e Reciclagem API",
+      "description": "Coleção Insomnia da API RESTful (.NET 8) - tema ESG. Execute primeiro 'Auth - Login'; os endpoints críticos reaproveitam o token automaticamente via Response chaining.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_esg_base",
+      "_type": "environment",
+      "parentId": "wrk_esg_gestao_residuos",
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:8080"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "baseUrl"
+        ]
+      },
+      "metaSortKey": 1
+    },
+    {
+      "_id": "fld_esg_endpoints",
+      "_type": "request_group",
+      "parentId": "wrk_esg_gestao_residuos",
+      "name": "Endpoints",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1000
+    },
+    {
+      "_id": "req_auth_login",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Auth - Login (gera o token JWT)",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/api/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"username\": \"admin\",\n  \"senha\": \"Admin@123\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -1000,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_dashboard",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Dashboard ESG",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/api/dashboard",
+      "body": {},
+      "headers": [],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -990,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_pontos_list",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Pontos de Coleta - Listar (paginado + filtros)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/api/pontos-coleta?pageNumber=1&pageSize=5&status=ATIVO&ocupacaoMinima=0",
+      "body": {},
+      "headers": [],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -980,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_ponto_id",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Pontos de Coleta - Obter por Id",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/api/pontos-coleta/1",
+      "body": {},
+      "headers": [],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -970,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_descarte_post",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Descartes - Registrar (CRÍTICO - JWT)",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/api/descartes",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"idPonto\": 1,\n  \"idGerador\": 1,\n  \"tipoResiduo\": \"PLASTICO\",\n  \"pesoKg\": 120.5\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_auth_login', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+        }
+      ],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -960,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_descarte_list",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Descartes - Listar (paginado)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/api/descartes?pageNumber=1&pageSize=10&idPonto=1",
+      "body": {},
+      "headers": [],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -950,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_alertas_list",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Alertas - Listar pendentes (paginado)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/api/alertas?pageNumber=1&pageSize=10&status=PENDENTE",
+      "body": {},
+      "headers": [],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -940,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_alerta_atender",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Alertas - Atender (CRÍTICO - JWT)",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/api/alertas/1/atender",
+      "body": {},
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {% response 'body', 'req_auth_login', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+        }
+      ],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -930,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_compliance_list",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Compliance - Listar (paginado)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/api/relatorios-compliance?pageNumber=1&pageSize=10&ano=2026",
+      "body": {},
+      "headers": [],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -920,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    },
+    {
+      "_id": "req_compliance_cons",
+      "_type": "request",
+      "parentId": "fld_esg_endpoints",
+      "name": "Compliance - Consolidado por período",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/api/relatorios-compliance/consolidado?ano=2026",
+      "body": {},
+      "headers": [],
+      "authentication": {},
+      "parameters": [],
+      "metaSortKey": -910,
+      "settingStoreCookies": true,
+      "settingSendCookies": true
+    }
+  ]
+}

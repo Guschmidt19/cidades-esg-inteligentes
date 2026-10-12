@@ -1,0 +1,48 @@
+@host = http://localhost:8080
+@token = COLE_O_TOKEN_AQUI
+
+### 1. Autenticar (login) e obter token JWT
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "senha": "Admin@123"
+}
+
+### 2. Dashboard ESG (público)
+GET {{host}}/api/dashboard
+
+### 3. Listar pontos de coleta (paginado + filtros)
+GET {{host}}/api/pontos-coleta?pageNumber=1&pageSize=5&status=ATIVO&ocupacaoMinima=0
+
+### 4. Obter ponto de coleta por id
+GET {{host}}/api/pontos-coleta/1
+
+### 5. Registrar descarte (CRÍTICO - requer JWT)
+POST {{host}}/api/descartes
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "idPonto": 1,
+  "idGerador": 1,
+  "tipoResiduo": "PLASTICO",
+  "pesoKg": 120.5
+}
+
+### 6. Listar descartes (paginado)
+GET {{host}}/api/descartes?pageNumber=1&pageSize=10&idPonto=1
+
+### 7. Listar alertas pendentes (paginado)
+GET {{host}}/api/alertas?pageNumber=1&pageSize=10&status=PENDENTE
+
+### 8. Atender alerta (CRÍTICO - requer JWT)
+PUT {{host}}/api/alertas/1/atender
+Authorization: Bearer {{token}}
+
+### 9. Listar relatórios de compliance (paginado)
+GET {{host}}/api/relatorios-compliance?pageNumber=1&pageSize=10&ano=2026
+
+### 10. Consolidado de compliance por período
+GET {{host}}/api/relatorios-compliance/consolidado?ano=2026

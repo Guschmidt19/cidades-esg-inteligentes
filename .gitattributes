@@ -1,0 +1,11 @@
+# Normaliza finais de linha: scripts e arquivos de config sempre com LF
+# (evita erro "bad interpreter" ao rodar no Linux/CI quando editados no Windows)
+* text=auto
+*.sh   text eol=lf
+*.py   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+Dockerfile text eol=lf
+.env.example text eol=lf
+*.png binary
+*.pdf binary

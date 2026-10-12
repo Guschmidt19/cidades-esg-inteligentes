@@ -1,0 +1,88 @@
+# =============================================================================
+#  Orquestração local — Cidades ESG Inteligentes (API .NET 8 + PostgreSQL)
+#
+#  Uso:
+#    cp .env.example .env          # 1x: cria o arquivo de variáveis
+#    docker compose up -d --build  # sobe banco + API
+#    docker compose --profile tools up -d   # (opcional) também sobe o Adminer
+#    docker compose down           # para tudo (mantém os dados no volume)
+#    docker compose down -v        # para tudo e APAGA o volume do banco
+# =============================================================================
+name: cidades-esg
+
+services:
+  # ---------------------------------------------------------------------------
+  # Banco de dados PostgreSQL — sem porta publicada: só é acessível pela
+  # rede "backend" (a API o encontra pelo nome do serviço: Host=db)
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-esg_residuos}
+      POSTGRES_USER: ${POSTGRES_USER:-esg}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no arquivo .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data          # dados persistem entre reinícios
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  # ---------------------------------------------------------------------------
+  # API .NET 8 — construída a partir do Dockerfile da raiz
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-local}
+    image: ${API_IMAGE:-cidades-esg-api:local}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy               # só sobe quando o banco está pronto
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      APP_VERSION: ${APP_VERSION:-local}
+      Database__Provider: PostgreSQL
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Port=5432;Database=${POSTGRES_DB:-esg_residuos};Username=${POSTGRES_USER:-esg};Password=${POSTGRES_PASSWORD}
+      Jwt__SecretKey: ${JWT_SECRET_KEY:?Defina JWT_SECRET_KEY no arquivo .env (mínimo 32 caracteres)}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    networks:
+      - backend
+      - frontend
+
+  # ---------------------------------------------------------------------------
+  # (Opcional) Adminer — interface web para consultar o banco
+  # Sobe apenas com:  docker compose --profile tools up -d
+  # ---------------------------------------------------------------------------
+  adminer:
+    image: adminer:4.8.1
+    profiles: ["tools"]
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - "${ADMINER_PORT:-8081}:8080"
+    networks:
+      - backend
+      - frontend
+
+volumes:
+  pgdata:
+    name: cidades-esg-pgdata
+
+networks:
+  backend:                  # rede do banco: só api/adminer enxergam o "db"
+    name: cidades-esg-backend
+  frontend:                 # rede de borda: onde ficam as portas publicadas
+    name: cidades-esg-frontend

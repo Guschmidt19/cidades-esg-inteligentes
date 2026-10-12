@@ -1,0 +1,25 @@
+# Saídas de build
+**/bin/
+**/obj/
+**/TestResults/
+
+# IDEs
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+
+# Git, CI/CD e documentação (não fazem parte da imagem)
+.git
+.github/
+.gitignore
+docs/
+insomnia/
+scripts/
+*.md
+*.http
+
+# Segredos e orquestração
+.env
+.env.*
+docker-compose*.yml

@@ -1,0 +1,24 @@
+## .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
+TestResults/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.pdb
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## Segredos — nunca versionar
+.env
+.env.*
+!.env.example
+
+## Logs gerados localmente
+*.log
+docker-compose-logs.txt
