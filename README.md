@@ -259,6 +259,25 @@ docker compose down -v                                   # derrubar e limpar vol
 
 ---
 
+
+## Desafios encontrados e soluções
+
+| # | Desafio | Como foi resolvido |
+|---|---|---|
+| 1 | O projeto original usava o **Oracle da FIAP**, que não roda bem em container e não é acessível a partir da nuvem para staging/produção. | Provider de banco configurável por variável (`Database__Provider`): **PostgreSQL** no Docker e na nuvem, Oracle mantido como opção. |
+| 2 | As **migrations** existentes eram específicas do Oracle (tipos como `NUMBER(10)`) e falhariam no PostgreSQL. | No PostgreSQL o schema é criado a partir do modelo (`EnsureCreated`); no Oracle continuam as migrations (`Migrate`). |
+| 3 | O banco demora alguns segundos para aceitar conexões (container subindo ou banco na nuvem "acordando"). | `depends_on: condition: service_healthy` no Compose + **até 10 tentativas** de conexão no startup da API. |
+| 4 | O Render define a porta pela variável `PORT` (10000), diferente da porta 8080 do container. | A API lê `PORT` quando ela existe; sem ela, usa 8080. A mesma imagem roda local e na nuvem. |
+| 5 | Os testes precisam rodar no CI **sem** um banco real. | `WebApplicationFactory` + EF Core **InMemory**, com um banco isolado por classe de teste. |
+| 6 | Scripts `.sh` editados no Windows ganham quebras de linha CRLF e falham no Linux do pipeline. | `.gitattributes` forçando `LF` nos scripts e execução via `bash script.sh`. |
+| 7 | Como saber se o deploy **realmente terminou** e se a versão no ar é a nova? | A imagem recebe a tag do commit (`sha-xxxxxxx`), a API a expõe em `/api/info` e o pipeline espera essa versão aparecer antes do smoke test. |
+| 8 | O Render só aceita uma imagem que já exista no registry, mas a imagem só existe depois do pipeline rodar. | Jobs de deploy condicionados às variáveis `STAGING_URL`/`PRODUCTION_URL`: na 1ª execução ficam *skipped*; depois de criar os serviços, rodam normalmente. |
+| 9 | Proteger senhas e chaves sem colocá-las no código público. | Connection strings e chaves JWT (uma por ambiente) nas variáveis do Render; deploy hooks em **GitHub Environment secrets**; `.env` fora do Git. |
+| 10 | Evitar que uma versão com problema chegue direto em produção. | Produção depende de staging saudável (`needs`) e exige **aprovação manual** (Required reviewers). |
+
+---
+
+
 ## Tecnologias utilizadas
 
 | Categoria | Tecnologias |
@@ -324,10 +343,10 @@ cidades-esg-inteligentes/
 
 | Item | OK |
 |---|---|
-| Projeto compactado em .ZIP com estrutura organizada | ☐ |
-| Dockerfile funcional | ☐ |
-| docker-compose.yml ou arquivos Kubernetes | ☐ |
-| Pipeline com etapas de build, teste e deploy | ☐ |
-| README.md com instruções e prints | ☐ |
-| Documentação técnica com evidências (PDF ou PPT) | ☐ |
-| Deploy realizado nos ambientes staging e produção | ☐ |
+| Projeto compactado em .ZIP com estrutura organizada | ✅ |
+| Dockerfile funcional | ✅ |
+| docker-compose.yml ou arquivos Kubernetes | ✅ |
+| Pipeline com etapas de build, teste e deploy | ✅ |
+| README.md com instruções e prints | ✅ |
+| Documentação técnica com evidências (PDF ou PPT) | ✅ |
+| Deploy realizado nos ambientes staging e produção | ✅ |
