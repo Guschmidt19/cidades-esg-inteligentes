@@ -9,8 +9,8 @@ que faz build, testes e deploy automatizado nos ambientes de **staging** e **pro
 | Ambiente | URL | Branch / gatilho |
 |---|---|---|
 | Local (Docker Compose) | http://localhost:8080/swagger | `docker compose up` |
-| **Staging** | `STAGING_URL_AQUI/swagger` | push na `main` → automático |
-| **Produção** | `PRODUCTION_URL_AQUI/swagger` | após staging aprovado |
+| **Staging** | `https://cidades-esg-staging-zlcv.onrender.com/swagger` | push na `main` → automático |
+| **Produção** | `https://cidades-esg-producao.onrender.com/swagger` | após staging aprovado |
 
 ---
 
@@ -24,7 +24,7 @@ que faz build, testes e deploy automatizado nos ambientes de **staging** e **pro
 
 ```bash
 # 1. Clonar o repositório
-git clone https://github.com/SEU_USUARIO/cidades-esg-inteligentes.git
+git clone https://github.com/Guschmidt19/cidades-esg-inteligentes.git
 cd cidades-esg-inteligentes
 
 # 2. Criar o arquivo de variáveis de ambiente a partir do modelo
