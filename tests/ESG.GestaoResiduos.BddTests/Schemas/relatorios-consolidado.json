@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RelatoriosConsolidado",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["anoReferencia", "mesReferencia", "totalKgColetado", "qtdDescartes", "qtdRelatorios", "qtdConformes", "qtdNaoConformes", "percentualConformidade"],
+    "properties": {
+      "anoReferencia":          { "type": "integer" },
+      "mesReferencia":          { "type": "integer", "minimum": 1, "maximum": 12 },
+      "totalKgColetado":        { "type": "number", "minimum": 0 },
+      "qtdDescartes":           { "type": "integer", "minimum": 0 },
+      "qtdRelatorios":          { "type": "integer", "minimum": 0 },
+      "qtdConformes":           { "type": "integer", "minimum": 0 },
+      "qtdNaoConformes":        { "type": "integer", "minimum": 0 },
+      "percentualConformidade": { "type": "number", "minimum": 0 }
+    },
+    "additionalProperties": false
+  }
+}

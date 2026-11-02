@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DescartesLista",
+  "type": "object",
+  "required": ["items", "pageNumber", "pageSize", "totalItems", "totalPages", "hasPrevious", "hasNext"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["idDescarte", "idPonto", "pontoNome", "idGerador", "geradorNome", "dataDescarte", "tipoResiduo", "pesoKg"],
+        "properties": {
+          "idDescarte":   { "type": "integer" },
+          "idPonto":      { "type": "integer" },
+          "pontoNome":    { "type": "string" },
+          "idGerador":    { "type": "integer" },
+          "geradorNome":  { "type": "string" },
+          "dataDescarte": { "type": "string", "format": "date-time" },
+          "tipoResiduo":  { "type": "string", "enum": ["PLASTICO", "PAPEL", "VIDRO", "METAL", "ORGANICO", "ELETRONICO"] },
+          "pesoKg":       { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "pageNumber":  { "type": "integer", "minimum": 1 },
+    "pageSize":    { "type": "integer", "minimum": 1, "maximum": 100 },
+    "totalItems":  { "type": "integer", "minimum": 0 },
+    "totalPages":  { "type": "integer", "minimum": 0 },
+    "hasPrevious": { "type": "boolean" },
+    "hasNext":     { "type": "boolean" }
+  },
+  "additionalProperties": false
+}

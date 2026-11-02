@@ -77,6 +77,36 @@ Para usar o **Oracle da FIAP** (projeto original), defina `Database__Provider=Or
 
 ---
 
+## Testes automatizados de API (BDD + Contrato)
+
+Atividade **Testes Automatizados**: 27 cenários **Gherkin** (em português; 17 positivos e 10 negativos)
+executados com **Reqnroll + xUnit** contra a API em execução, com validação de **status code**, **corpo JSON**
+e **contrato (JSON Schema)** em **todas** as rotas. Código em
+[`tests/ESG.GestaoResiduos.BddTests`](tests/ESG.GestaoResiduos.BddTests/README.md).
+
+```bash
+# Um comando (Docker: sobe PostgreSQL + API + testes, gera TestResults-BDD/*.trx e derruba tudo)
+bash scripts/run-bdd-tests.sh                 # Windows: .\scripts\run-bdd-tests.ps1
+
+# Ou, com a API já no ar (docker compose up -d --build):
+dotnet test tests/ESG.GestaoResiduos.BddTests/ESG.GestaoResiduos.BddTests.csproj
+```
+
+| Feature | Rotas cobertas |
+|---|---|
+| `autenticacao.feature` | `POST /api/auth/login` |
+| `pontos_coleta.feature` | `GET /api/pontos-coleta`, `GET /api/pontos-coleta/{id}` |
+| `descartes.feature` | `GET/POST /api/descartes` |
+| `Alertas.feature` | `GET /api/alertas`, `PUT /api/alertas/{id}/atender` |
+| `dashboard_relatorios.feature` | `GET /api/dashboard`, `GET /api/relatorios-compliance`, `.../consolidado` |
+| `infraestrutura.feature` | `GET /health`, `GET /api/info` |
+
+No CI, o job **“Testes BDD (Gherkin) e contrato”** roda esses cenários a cada push/PR e o deploy só ocorre se ele passar.
+Detalhes, estrutura e dicas: [`tests/ESG.GestaoResiduos.BddTests/README.md`](tests/ESG.GestaoResiduos.BddTests/README.md).
+Documentação detalhada dos cenários e evidências: [`docs/Documentacao_Testes_Automatizados.pdf`](docs/Documentacao_Testes_Automatizados.pdf).
+
+---
+
 ## Pipeline CI/CD
 
 **Ferramenta:** GitHub Actions — arquivo [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
@@ -86,10 +116,12 @@ Para usar o **Oracle da FIAP** (projeto original), defina `Database__Provider=Or
 ```mermaid
 flowchart LR
     A[push na main] --> B["1. Build + Testes<br/>dotnet restore/build/test"]
-    B --> C["2. Docker<br/>build da imagem<br/>compose API+Postgres<br/>smoke test<br/>push GHCR"]
-    C --> D["3. Deploy STAGING<br/>Render deploy hook<br/>aguarda versão<br/>smoke test leitura+escrita"]
+    B --> T["2. Testes BDD + contrato<br/>compose API+Postgres<br/>Gherkin / JSON Schema"]
+    B --> C["3. Docker<br/>build da imagem<br/>compose API+Postgres<br/>smoke test<br/>push GHCR"]
+    T --> D["4. Deploy STAGING<br/>Render deploy hook<br/>aguarda versão<br/>smoke test leitura+escrita"]
+    C --> D
     D --> E{"Aprovação<br/>manual"}
-    E --> F["4. Deploy PRODUÇÃO<br/>mesma imagem<br/>smoke test somente leitura"]
+    E --> F["5. Deploy PRODUÇÃO<br/>mesma imagem<br/>smoke test somente leitura"]
     PR[pull request] -.-> B
 ```
 
@@ -97,17 +129,18 @@ flowchart LR
 
 | # | Job | O que faz | Falha quando… |
 |---|---|---|---|
-| 1 | **Build e testes** | `dotnet restore` → `dotnet build -c Release` → `dotnet test` (xUnit, 12 testes com banco InMemory). Gera resumo na aba *Summary* e o artefato `resultados-testes` (.trx + cobertura). | não compila ou algum teste falha |
-| 2 | **Docker** | Constrói a imagem com a tag `sha-<commit>`, sobe **API + PostgreSQL com Docker Compose** dentro do runner e roda o `smoke-test.sh` contra o container. Salva os logs como artefato e publica a imagem no **GHCR** (`:sha-xxxxxxx` e `:latest`). | o container não sobe, o banco não conecta ou algum endpoint responde errado |
-| 3 | **Deploy STAGING** | Chama o *deploy hook* do Render informando a imagem exata (`imgURL`), espera `/api/info` mostrar a nova versão e roda o smoke test **com escrita** (login JWT + registro de descarte). | deploy não conclui em 15 min ou smoke test falha |
-| 4 | **Deploy PRODUÇÃO** | Só começa se staging passou. Promove **a mesma imagem** (build once, deploy many). O environment `production` pode exigir **aprovação manual**. Smoke test **somente leitura**. | idem |
+| 1 | **Build e testes** | `dotnet restore` → `dotnet build -c Release` → `dotnet test` do projeto xUnit (12 testes com banco InMemory). Gera resumo na aba *Summary* e o artefato `resultados-testes` (.trx + cobertura). | não compila ou algum teste falha |
+| 2 | **Testes BDD e contrato** | Sobe **API + PostgreSQL com Docker Compose**, espera `/health` e executa os 27 cenários Gherkin + contratos JSON Schema (`API_BASE_URL=http://localhost:8080`). Publica o resumo na aba *Summary* e os artefatos `resultados-bdd` (.trx) e `docker-compose-bdd-logs`. | algum cenário ou contrato falha |
+| 3 | **Docker** | Constrói a imagem com a tag `sha-<commit>`, sobe **API + PostgreSQL com Docker Compose** dentro do runner e roda o `smoke-test.sh` contra o container. Salva os logs como artefato e publica a imagem no **GHCR** (`:sha-xxxxxxx` e `:latest`). | o container não sobe, o banco não conecta ou algum endpoint responde errado |
+| 4 | **Deploy STAGING** | Chama o *deploy hook* do Render informando a imagem exata (`imgURL`), espera `/api/info` mostrar a nova versão e roda o smoke test **com escrita** (login JWT + registro de descarte). | deploy não conclui em 15 min ou smoke test falha |
+| 5 | **Deploy PRODUÇÃO** | Só começa se staging passou. Promove **a mesma imagem** (build once, deploy many). O environment `production` pode exigir **aprovação manual**. Smoke test **somente leitura**. | idem |
 
 ### Lógica e boas práticas aplicadas
 - **Gatilhos:** `push` na `main` executa tudo; `pull_request` executa só build/testes/docker (nada é publicado); `workflow_dispatch` permite rodar manualmente.
 - **Build once, deploy many:** a imagem testada no CI é a mesma que vai para staging e produção — muda só a configuração (variáveis de ambiente de cada serviço).
 - **Rastreabilidade:** a tag da imagem é o SHA do commit e a API expõe essa versão em `/api/info`, o que permite ao pipeline confirmar que o deploy realmente terminou.
 - **Segredos fora do código:** deploy hooks ficam em *GitHub Environments secrets*; connection strings e chave JWT ficam nas variáveis de ambiente do Render.
-- **Portões de qualidade:** cada etapa depende da anterior (`needs`); produção depende de staging saudável.
+- **Portões de qualidade:** cada etapa depende da anterior (`needs`); o deploy em staging exige testes BDD + imagem OK; produção depende de staging saudável.
 - **Concorrência controlada:** `concurrency` impede dois deploys simultâneos.
 
 ### Configuração necessária no GitHub (uma vez)
@@ -349,4 +382,5 @@ cidades-esg-inteligentes/
 | Pipeline com etapas de build, teste e deploy | ✅ |
 | README.md com instruções e prints | ✅ |
 | Documentação técnica com evidências (PDF ou PPT) | ✅ |
+| Testes automatizados de API: BDD (Gherkin) + contrato (JSON Schema) | ✅ |
 | Deploy realizado nos ambientes staging e produção | ✅ |

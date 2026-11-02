@@ -55,34 +55,46 @@ public class RelatorioService : IRelatorioService
         var query = _db.Relatorios.AsNoTracking().AsQueryable();
         if (ano.HasValue) query = query.Where(r => r.AnoReferencia == ano.Value);
 
+        // GROUP BY executado no banco. A coluna CONFORME é gravada como 'S'/'N' (texto), então ela
+        // entra na chave do agrupamento em vez de ser usada como condição booleana (FILTER),
+        // o que o PostgreSQL rejeita.
         var grupos = await query
-            .GroupBy(r => new { r.AnoReferencia, r.MesReferencia })
+            .GroupBy(r => new { r.AnoReferencia, r.MesReferencia, r.Conforme })
             .Select(g => new
             {
                 g.Key.AnoReferencia,
                 g.Key.MesReferencia,
+                g.Key.Conforme,
                 TotalKg = g.Sum(x => x.TotalKgColetado),
                 QtdDescartes = g.Sum(x => x.QtdDescartes),
-                QtdRelatorios = g.Count(),
-                QtdConformes = g.Count(x => x.Conforme),
-                QtdNaoConformes = g.Count(x => !x.Conforme)
+                QtdRelatorios = g.Count()
             })
-            .OrderByDescending(g => g.AnoReferencia)
-            .ThenByDescending(g => g.MesReferencia)
             .ToListAsync(ct);
 
-        return grupos.Select(g => new RelatorioConsolidadoResponse
-        {
-            AnoReferencia = g.AnoReferencia,
-            MesReferencia = g.MesReferencia,
-            TotalKgColetado = g.TotalKg,
-            QtdDescartes = g.QtdDescartes,
-            QtdRelatorios = g.QtdRelatorios,
-            QtdConformes = g.QtdConformes,
-            QtdNaoConformes = g.QtdNaoConformes,
-            PercentualConformidade = g.QtdRelatorios > 0
-                ? Math.Round((decimal)g.QtdConformes / g.QtdRelatorios * 100m, 2)
-                : 0m
-        }).ToList();
+        // No máximo 2 linhas por período (conforme / não conforme): união leve em memória.
+        return grupos
+            .GroupBy(g => new { g.AnoReferencia, g.MesReferencia })
+            .Select(periodo =>
+            {
+                var qtdRelatorios = periodo.Sum(x => x.QtdRelatorios);
+                var qtdConformes = periodo.Where(x => x.Conforme).Sum(x => x.QtdRelatorios);
+
+                return new RelatorioConsolidadoResponse
+                {
+                    AnoReferencia = periodo.Key.AnoReferencia,
+                    MesReferencia = periodo.Key.MesReferencia,
+                    TotalKgColetado = periodo.Sum(x => x.TotalKg),
+                    QtdDescartes = periodo.Sum(x => x.QtdDescartes),
+                    QtdRelatorios = qtdRelatorios,
+                    QtdConformes = qtdConformes,
+                    QtdNaoConformes = qtdRelatorios - qtdConformes,
+                    PercentualConformidade = qtdRelatorios > 0
+                        ? Math.Round((decimal)qtdConformes / qtdRelatorios * 100m, 2)
+                        : 0m
+                };
+            })
+            .OrderByDescending(r => r.AnoReferencia)
+            .ThenByDescending(r => r.MesReferencia)
+            .ToList();
     }
 }

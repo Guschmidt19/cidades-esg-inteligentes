@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PontoColetaResponse",
+  "type": "object",
+  "required": ["idPonto", "nome", "localizacao", "tipoResiduo", "capacidadeMaxKg", "qtdeAtualKg", "percentualOcupacao", "status"],
+  "properties": {
+    "idPonto":            { "type": "integer" },
+    "nome":               { "type": "string", "minLength": 1 },
+    "localizacao":        { "type": "string" },
+    "tipoResiduo":        { "type": "string", "enum": ["PLASTICO", "PAPEL", "VIDRO", "METAL", "ORGANICO", "ELETRONICO"] },
+    "capacidadeMaxKg":    { "type": "number", "minimum": 0 },
+    "qtdeAtualKg":        { "type": "number", "minimum": 0 },
+    "percentualOcupacao": { "type": "number", "minimum": 0 },
+    "status":             { "type": "string", "enum": ["ATIVO", "INATIVO", "CHEIO"] }
+  },
+  "additionalProperties": false
+}

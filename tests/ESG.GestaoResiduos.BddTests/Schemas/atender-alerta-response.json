@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AtenderAlertaResponse",
+  "type": "object",
+  "required": ["idAlerta", "statusAlerta", "idPonto", "qtdeAtualPonto", "statusPonto", "mensagem"],
+  "properties": {
+    "idAlerta":       { "type": "integer" },
+    "statusAlerta":   { "type": "string", "enum": ["PENDENTE", "ATENDIDO"] },
+    "idPonto":        { "type": "integer" },
+    "qtdeAtualPonto": { "type": "number", "minimum": 0 },
+    "statusPonto":    { "type": "string", "enum": ["ATIVO", "INATIVO", "CHEIO"] },
+    "mensagem":       { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

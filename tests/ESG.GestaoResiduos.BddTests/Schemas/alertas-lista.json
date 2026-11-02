@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AlertasLista",
+  "type": "object",
+  "required": ["items", "pageNumber", "pageSize", "totalItems", "totalPages", "hasPrevious", "hasNext"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["idAlerta", "idPonto", "pontoNome", "dataAlerta", "percentualOcupacao", "statusAlerta"],
+        "properties": {
+          "idAlerta":           { "type": "integer" },
+          "idPonto":            { "type": "integer" },
+          "pontoNome":          { "type": "string" },
+          "dataAlerta":         { "type": "string", "format": "date-time" },
+          "percentualOcupacao": { "type": "number" },
+          "statusAlerta":       { "type": "string", "enum": ["PENDENTE", "ATENDIDO"] },
+          "mensagem":           { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "pageNumber":  { "type": "integer", "minimum": 1 },
+    "pageSize":    { "type": "integer", "minimum": 1, "maximum": 100 },
+    "totalItems":  { "type": "integer", "minimum": 0 },
+    "totalPages":  { "type": "integer", "minimum": 0 },
+    "hasPrevious": { "type": "boolean" },
+    "hasNext":     { "type": "boolean" }
+  },
+  "additionalProperties": false
+}

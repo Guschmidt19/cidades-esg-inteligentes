@@ -22,3 +22,7 @@ TestResults/
 ## Logs gerados localmente
 *.log
 docker-compose-logs.txt
+
+# Resultados dos testes BDD
+TestResults-BDD/
+logs-consolidado.txt

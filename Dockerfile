@@ -5,7 +5,10 @@
 #
 #  Estágios:
 #    build   -> restaura dependências e compila a solução (API + testes)
-#    test    -> (opcional) roda os testes:  docker build --target test .
+#    test    -> (opcional) roda os testes unitários/integração (xUnit):
+#               docker build --target test .
+#               (os testes BDD/contrato rodam contra a API em execução:
+#                veja tests/ESG.GestaoResiduos.BddTests/README.md)
 #    publish -> gera os binários otimizados da API
 #    final   -> imagem enxuta de runtime, usuário não-root e healthcheck
 # =============================================================================
@@ -19,6 +22,7 @@ WORKDIR /src
 COPY ESG.GestaoResiduos.sln ./
 COPY src/ESG.GestaoResiduos.API/ESG.GestaoResiduos.API.csproj src/ESG.GestaoResiduos.API/
 COPY tests/ESG.GestaoResiduos.Tests/ESG.GestaoResiduos.Tests.csproj tests/ESG.GestaoResiduos.Tests/
+COPY tests/ESG.GestaoResiduos.BddTests/ESG.GestaoResiduos.BddTests.csproj tests/ESG.GestaoResiduos.BddTests/
 RUN dotnet restore ESG.GestaoResiduos.sln
 
 # 2) Copia o código-fonte e compila em Release.
@@ -28,7 +32,9 @@ RUN dotnet build ESG.GestaoResiduos.sln -c Release --no-restore
 
 # ---------- Stage 2: test (opcional) ----------------------------------------
 FROM build AS test
-RUN dotnet test ESG.GestaoResiduos.sln -c Release --no-build
+# Roda só o projeto de testes xUnit (in-memory). O projeto BddTests precisa da
+# API no ar (HTTP) e por isso é executado à parte, via docker-compose.bdd.yml.
+RUN dotnet test tests/ESG.GestaoResiduos.Tests/ESG.GestaoResiduos.Tests.csproj -c Release --no-build
 
 # ---------- Stage 3: publish -------------------------------------------------
 FROM build AS publish

@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DashboardResponse",
+  "type": "object",
+  "required": ["totalPontos", "pontosAtivos", "pontosCheios", "alertasPendentes", "totalColetadoKg", "taxaConformidade", "coletaPorTipo", "pontosCriticos"],
+  "properties": {
+    "totalPontos":      { "type": "integer", "minimum": 0 },
+    "pontosAtivos":     { "type": "integer", "minimum": 0 },
+    "pontosCheios":     { "type": "integer", "minimum": 0 },
+    "alertasPendentes": { "type": "integer", "minimum": 0 },
+    "totalColetadoKg":  { "type": "number", "minimum": 0 },
+    "taxaConformidade": { "type": "number", "minimum": 0 },
+    "coletaPorTipo": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["tipoResiduo", "totalKg", "qtdDescartes"],
+        "properties": {
+          "tipoResiduo":  { "type": "string" },
+          "totalKg":      { "type": "number", "minimum": 0 },
+          "qtdDescartes": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "pontosCriticos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["idPonto", "nome", "percentualOcupacao", "status"],
+        "properties": {
+          "idPonto":            { "type": "integer" },
+          "nome":               { "type": "string" },
+          "percentualOcupacao": { "type": "number", "minimum": 0 },
+          "status":             { "type": "string", "enum": ["ATIVO", "INATIVO", "CHEIO"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

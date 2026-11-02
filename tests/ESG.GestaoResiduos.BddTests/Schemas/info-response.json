@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InfoResponse",
+  "type": "object",
+  "required": ["aplicacao", "ambiente", "versao", "banco", "iniciadoEmUtc", "horaServidorUtc"],
+  "properties": {
+    "aplicacao":       { "type": "string", "minLength": 1 },
+    "ambiente":        { "type": "string", "minLength": 1 },
+    "versao":          { "type": "string", "minLength": 1 },
+    "banco":           { "type": "string", "minLength": 1 },
+    "iniciadoEmUtc":   { "type": "string", "format": "date-time" },
+    "horaServidorUtc": { "type": "string", "format": "date-time" }
+  }
+}

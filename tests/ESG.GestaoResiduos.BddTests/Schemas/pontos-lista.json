@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PontosColetaLista",
+  "type": "object",
+  "required": ["items", "pageNumber", "pageSize", "totalItems", "totalPages", "hasPrevious", "hasNext"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["idPonto", "nome", "localizacao", "tipoResiduo", "capacidadeMaxKg", "qtdeAtualKg", "percentualOcupacao", "status"],
+        "properties": {
+          "idPonto":            { "type": "integer" },
+          "nome":               { "type": "string", "minLength": 1 },
+          "localizacao":        { "type": "string" },
+          "tipoResiduo":        { "type": "string", "enum": ["PLASTICO", "PAPEL", "VIDRO", "METAL", "ORGANICO", "ELETRONICO"] },
+          "capacidadeMaxKg":    { "type": "number", "minimum": 0 },
+          "qtdeAtualKg":        { "type": "number", "minimum": 0 },
+          "percentualOcupacao": { "type": "number", "minimum": 0 },
+          "status":             { "type": "string", "enum": ["ATIVO", "INATIVO", "CHEIO"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "pageNumber":  { "type": "integer", "minimum": 1 },
+    "pageSize":    { "type": "integer", "minimum": 1, "maximum": 100 },
+    "totalItems":  { "type": "integer", "minimum": 0 },
+    "totalPages":  { "type": "integer", "minimum": 0 },
+    "hasPrevious": { "type": "boolean" },
+    "hasNext":     { "type": "boolean" }
+  },
+  "additionalProperties": false
+}

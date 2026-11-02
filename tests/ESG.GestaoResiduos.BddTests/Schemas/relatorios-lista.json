@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RelatoriosComplianceLista",
+  "type": "object",
+  "required": ["items", "pageNumber", "pageSize", "totalItems", "totalPages", "hasPrevious", "hasNext"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["idRelatorio", "idPonto", "pontoNome", "mesReferencia", "anoReferencia", "totalKgColetado", "qtdDescartes", "conforme", "dataGeracao"],
+        "properties": {
+          "idRelatorio":     { "type": "integer" },
+          "idPonto":         { "type": "integer" },
+          "pontoNome":       { "type": "string" },
+          "mesReferencia":   { "type": "integer", "minimum": 1, "maximum": 12 },
+          "anoReferencia":   { "type": "integer" },
+          "totalKgColetado": { "type": "number", "minimum": 0 },
+          "qtdDescartes":    { "type": "integer", "minimum": 0 },
+          "conforme":        { "type": "boolean" },
+          "dataGeracao":     { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "pageNumber":  { "type": "integer", "minimum": 1 },
+    "pageSize":    { "type": "integer", "minimum": 1, "maximum": 100 },
+    "totalItems":  { "type": "integer", "minimum": 0 },
+    "totalPages":  { "type": "integer", "minimum": 0 },
+    "hasPrevious": { "type": "boolean" },
+    "hasNext":     { "type": "boolean" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DescarteResultadoResponse",
+  "type": "object",
+  "required": ["descarte", "qtdeAtualPonto", "percentualOcupacao", "statusPonto", "alertaGerado", "pontoFicouCheio", "mensagem"],
+  "properties": {
+    "descarte": {
+      "type": "object",
+      "required": ["idDescarte", "idPonto", "pontoNome", "idGerador", "geradorNome", "dataDescarte", "tipoResiduo", "pesoKg"],
+      "properties": {
+        "idDescarte":   { "type": "integer" },
+        "idPonto":      { "type": "integer" },
+        "pontoNome":    { "type": "string" },
+        "idGerador":    { "type": "integer" },
+        "geradorNome":  { "type": "string" },
+        "dataDescarte": { "type": "string", "format": "date-time" },
+        "tipoResiduo":  { "type": "string", "enum": ["PLASTICO", "PAPEL", "VIDRO", "METAL", "ORGANICO", "ELETRONICO"] },
+        "pesoKg":       { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "qtdeAtualPonto":     { "type": "number" },
+    "percentualOcupacao": { "type": "number", "minimum": 0 },
+    "statusPonto":        { "type": "string", "enum": ["ATIVO", "INATIVO", "CHEIO"] },
+    "alertaGerado":       { "type": "boolean" },
+    "pontoFicouCheio":    { "type": "boolean" },
+    "mensagem":           { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

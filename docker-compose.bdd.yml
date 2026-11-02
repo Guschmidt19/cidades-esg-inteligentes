@@ -1,0 +1,28 @@
+# =============================================================================
+#  Testes BDD (Gherkin) + contrato (JSON Schema) em Docker Compose
+#
+#  Arquivo de EXTENSÃO do docker-compose.yml (sobe API + PostgreSQL + testes):
+#
+#    cp .env.example .env     # 1x (PowerShell: Copy-Item .env.example .env)
+#    docker compose -f docker-compose.yml -f docker-compose.bdd.yml up \
+#        --build --abort-on-container-exit --exit-code-from bdd-tests
+#    docker compose -f docker-compose.yml -f docker-compose.bdd.yml down -v
+#
+#  O código de saída do comando é o dos testes (0 = todos passaram).
+#  Os resultados .trx ficam em ./TestResults-BDD
+# =============================================================================
+services:
+  bdd-tests:
+    build:
+      context: .
+      dockerfile: tests/ESG.GestaoResiduos.BddTests/Dockerfile
+    image: cidades-esg-bdd-tests:local
+    depends_on:
+      api:
+        condition: service_healthy      # só começa quando a API está "healthy"
+    environment:
+      API_BASE_URL: http://api:8080
+    volumes:
+      - ./TestResults-BDD:/results
+    networks:
+      - frontend

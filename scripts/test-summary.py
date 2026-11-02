@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 
 NS = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
 arquivos = glob.glob(sys.argv[1] if len(sys.argv) > 1 else "TestResults/**/*.trx", recursive=True)
+titulo = sys.argv[2] if len(sys.argv) > 2 else "Resultado dos testes automatizados (xUnit)"
 
 total = passou = falhou = 0
 linhas = []
@@ -19,10 +20,10 @@ for arquivo in arquivos:
         falhou += int(contadores.get("failed", 0))
     for r in raiz.findall(".//t:UnitTestResult", NS):
         icone = "✅" if r.get("outcome") == "Passed" else "❌"
-        nome = r.get("testName", "").replace("ESG.GestaoResiduos.Tests.", "")
+        nome = r.get("testName", "").replace("ESG.GestaoResiduos.Tests.", "").replace("ESG.GestaoResiduos.BddTests.", "")
         linhas.append(f"| {icone} | `{nome}` | {r.get('duration', '')[:11]} |")
 
-print("## 🧪 Resultado dos testes automatizados (xUnit)\n")
+print(f"## 🧪 {titulo}\n")
 print(f"**Total:** {total} &nbsp;|&nbsp; **Passaram:** {passou} &nbsp;|&nbsp; **Falharam:** {falhou}\n")
 print("| | Teste | Duração |")
 print("|---|---|---|")
